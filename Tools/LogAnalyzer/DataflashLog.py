@@ -32,32 +32,32 @@ class Channel:
 	dictData = None #  dict of linenum->value      # store dupe data in dict and list for now, until we decide which is the better way to go
 	listData = None #  list of (linenum,value)
 	def __init__(self):
-		self.data = {}
+		self.dictData = {}
 	def getSegment(self, startLine, endLine):
 		'''returns a segment of this data (from startLine to endLine, inclusive) as a new Channel instance'''
 		segment = Channel()
-		segment.data = {k:v for k,v in self.data.iteritems() if k >= startLine and k <= endLine}
+		segment.dictData = {k:v for k,v in self.dictData.iteritems() if k >= startLine and k <= endLine}
 		return segment
 	def min(self):
-		return min(self.data.values())
+		return min(self.dictData.values())
 	def max(self):
-		return max(self.data.values())
+		return max(self.dictData.values())
 	def avg(self):
-		return avg(self.data.values())
+		return avg(self.dictData.values())
 	def getNearestValue(self, lineNumber, lookForwards=True):
 		'''return the nearest data value to the given lineNumber'''
-		if lineNumber in self.data:
-			return self.data[lineNumber]
+		if lineNumber in self.dictData:
+			return self.dictData[lineNumber]
 		offset = 1
 		if not lookForwards:
 			offset = -1
-		minLine = min(self.data.keys())
-		maxLine = max(self.data.keys())
+		minLine = min(self.dictData.keys())
+		maxLine = max(self.dictData.keys())
 		line = max(minLine,lineNumber)
 		line = min(maxLine,line)
 		while line >= minLine and line <= maxLine:
-			if line in self.data:
-				return self.data[line]
+			if line in self.dictData:
+				return self.dictData[line]
 			line = line + offset
 		raise Exception("Error finding nearest value for line %d" % lineNumber)
 
@@ -73,8 +73,8 @@ class DataflashLogHelper:
 		if "Time" in logdata.channels["GPS"]:
 			timeLabel = "Time"
 		while lineNumber < logdata.lastLine:
-			if lineNumber in logdata.channels["GPS"][timeLabel].data:
-				return logdata.channels["GPS"][timeLabel].data[lineNumber]
+			if lineNumber in logdata.channels["GPS"][timeLabel].dictData:
+				return logdata.channels["GPS"][timeLabel].dictData[lineNumber]
 			lineNumber = lineNumber + 1
 
 	@staticmethod
@@ -217,7 +217,7 @@ class DataflashLog:
 						self.channels[groupName] = {}
 						for label in self.formats[groupName].labels:
 							self.channels[groupName][label] = Channel()
-						#print "Channel definition for group %s, data at address %s" % (groupName, hex(id(self.channels[groupName][label].data)))
+						#print "Channel definition for group %s, data at address %s" % (groupName, hex(id(self.channels[groupName][label].dictData)))
 						#pprint.pprint(self.channels[groupName]) # TEMP!!!
 					# check the number of tokens matches between the line and what we're expecting from the FMT definition
 					if len(tokens2) != (len(self.formats[groupName].labels) + 1):
@@ -226,9 +226,9 @@ class DataflashLog:
 					for (index,label) in enumerate(self.formats[groupName].labels):
 						value = float(tokens2[index+1])
 						channel = self.channels[groupName][label]
-						assert channel.data != None # channel.data[lineNumber] = value
-						#print "Set data {%s,%s} for line %d to value %f, stored at address %s" % (groupName,label,lineNumber,value,hex(id(channel.data)))
-						channel.data[lineNumber] = value
+						assert channel.dictData != None # channel.dictData[lineNumber] = value
+						#print "Set data {%s,%s} for line %d to value %f, stored at address %s" % (groupName,label,lineNumber,value,hex(id(channel.dictData)))
+						channel.dictData[lineNumber] = value
 			except:
 				print "Error parsing line %d of log file %s" % (lineNumber,self.filename)
 				raise

@@ -1,5 +1,5 @@
 from LogAnalyzer import Test,TestResult
-import APMLog
+import DataflashLog
 
 
 class TestUnderpowered(Test):
