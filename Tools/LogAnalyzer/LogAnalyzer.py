@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #
+# A module to analyze and identify any common problems which can be determined from log files
 #
 # Initial code by Andrew Chapman (chapman@skymount.com), 16th Jan 2014
 #

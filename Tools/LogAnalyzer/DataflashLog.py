@@ -1,6 +1,7 @@
 #
+# Code to abstract the parsing of APM Dataflash log files, currently only used by the LogAnalyzer
 #
-#
+# Initial code by Andrew Chapman (chapman@skymount.com), 16th Jan 2014
 #
 
 # TODO: handle datatype of channels properly, currently all cast to float during read
