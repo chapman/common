@@ -15,10 +15,10 @@ class TestEvents(Test):
 		errors = set()
 
 		if "ERR" in logdata.channels:
-			errLines = sorted(logdata.channels["ERR"]["Subsys"].data.keys())
+			errLines = sorted(logdata.channels["ERR"]["Subsys"].dictData.keys())
 			for line in errLines:
-			 	subSys = logdata.channels["ERR"]["Subsys"].data[line]
-			 	eCode  = logdata.channels["ERR"]["ECode"].data[line]
+			 	subSys = logdata.channels["ERR"]["Subsys"].dictData[line]
+			 	eCode  = logdata.channels["ERR"]["ECode"].dictData[line]
 			 	if subSys == 2 and (eCode == 1):
 			 		errors.add("PPM")
 			 	elif subSys == 3 and (eCode == 1 or eCode == 2):

@@ -111,12 +111,12 @@ class TestSuite:
 
 
 		# temp - test some spot values
-		#print "GPS abs alt on line 24126 is " + `self.logdata.channels["GPS"]["Alt"].data[24126]`   # 52.03
-		#print "ATT pitch on line 22153 is " + `self.logdata.channels["ATT"]["Pitch"].data[22153]`   # -7.03
+		#print "GPS abs alt on line 24126 is " + `self.logdata.channels["GPS"]["Alt"].dictData[24126]`   # 52.03
+		#print "ATT pitch on line 22153 is " + `self.logdata.channels["ATT"]["Pitch"].dictData[22153]`   # -7.03
 		#gpsAlt = self.logdata.channels["GPS"]["Alt"]
-		#print "All GPS Alt data: %s\n\n" % gpsAlt.data
+		#print "All GPS Alt data: %s\n\n" % gpsAlt.dictData
 		#gpsAltSeg = gpsAlt.getSegment(426,711)
-		#print "Segment of GPS Alt data from %d to %d: %s\n\n" % (426,711,gpsAltSeg.data)
+		#print "Segment of GPS Alt data from %d to %d: %s\n\n" % (426,711,gpsAltSeg.dictData)
 
 	def outputXML(self, xmlFile):
 		# TODO: implement XML output
