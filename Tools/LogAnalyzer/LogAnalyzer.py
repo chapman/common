@@ -127,21 +127,12 @@ class TestSuite:
 def main():
 	dirName = os.path.dirname(os.path.abspath(__file__))
 
-	#logfile = 'logs/2014-01-05 09-53 - APC Slow-Fly.log'   # AC3.1, has long LOITER
-	#logfile = 'logs/2014-01-05 13-33 - FPV.log'
-	#logfile = 'logs/2013-07-21 08-47 5 - 6S first test, auto.log'   # AC3.0, has IMU
-	#logfile = dirName + '/logs/Marco_Pixhawk.log'   # PX4, has IMU
-	#logfile = 'logs/2014-01-05 12-30 - Capilano and geofence and acro.log'  # has failsafes
-	#logfile = 'logs/2.9.1_motorfail.log'
-	#logfile = 'logs/tradheli_brownout.log'
-
 	# deal with command line arguments
 	parser = argparse.ArgumentParser(description='Analyze an APM Dataflash log for known issues')
 	parser.add_argument('logfile', type=argparse.FileType('r'), help='path to Dataflash log file')
 	parser.add_argument('-q', '--quiet', metavar='', action='store_const', const=True, help='quiet mode, do not print results')
 	parser.add_argument('-x', '--xml', type=str, metavar='XML file', nargs='?', const='', default='', help='write output to specified XML file')
 	args = parser.parse_args()
-	quiet = args.q
 
 	# log the log and run the tests
 	logdata = DataflashLog.DataflashLog(args.logfile.name)
@@ -149,11 +140,11 @@ def main():
 	testSuite.run(logdata)
 
 	# deal with output
-	if not quiet:
+	if not args.quiet:
 		testSuite.outputPlainText()
 	if args.xml:
 		testSuite.outputXML(args.xml)
-		if not quiet:
+		if not args.quiet:
 			print "XML output written to file: %s\n" % args.xml
 
 

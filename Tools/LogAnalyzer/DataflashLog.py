@@ -125,7 +125,7 @@ class DataflashLog:
 	parameters  = {} # token -> value
 	messages    = {} # lineNum -> message
 	modeChanges = {} # lineNum -> (mode,value)
-	channels    = {} # lineLabel -> {dataLabel:Channel}. Redundant to have groupName+name here and in Channel class, but aids lookup
+	channels    = {} # lineLabel -> {dataLabel:Channel}
 	lastLine    = None
 
 	def getCopterType(self):
@@ -146,7 +146,10 @@ class DataflashLog:
 			return ""
 
 	def __init__(self, logfile):
-		# maybe this should all move to a read() function...
+		self.read(logfile)
+
+	def read(self, logfile):
+		# TODO: dataflash log parsing code is *SUPER* hacky, should re-write more methodically
 		self.filename = logfile
 		f = open(self.filename, 'r')
 		lineNumber = 0

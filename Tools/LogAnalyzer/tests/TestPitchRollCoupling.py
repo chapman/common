@@ -12,4 +12,7 @@ class TestPitchRollCoupling(Test):
 		self.result = TestResult()
 		self.result.status = TestResult.StatusType.PASS
 
-		# TODO: implement pitch/roll input/output divergence testing
+		# TODO: implement pitch/roll input/output divergence testing - 
+
+		# note: names changed from PitchIn to DesPitch at some point, check for both
+		
