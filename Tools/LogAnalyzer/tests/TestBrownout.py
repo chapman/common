@@ -25,7 +25,7 @@ class TestBrownout(Test):
 				isArmed = False
 
 		# check for relative altitude at end
-		finalAlt = logdata.channels["GPS"]["RelAlt"].getNearestValue(logdata.lastLine, lookForwards=False)
+		finalAlt = logdata.channels["GPS"]["RelAlt"].getNearestValue(logdata.lineCount, lookForwards=False)
 
 		finalAltMax = 3.0   # max alt offset that we'll still consider to be on the ground
 		if isArmed and finalAlt > finalAltMax:

@@ -12,6 +12,7 @@ class TestCompass(Test):
 		self.result = TestResult()
 		self.result.status = TestResult.StatusType.PASS
 
+		# TODO: should max compass offsets be 150 or 250 on Pixhawk?
 		# quick test that compass offset parameters are within recommended range (+/- 150)
 		maxOffset   = 150
 		compassOfsX = logdata.parameters["COMPASS_OFS_X"]

@@ -7,8 +7,6 @@ import math # for isnan()
 class TestParams(Test):
 	'''test for any obviously bad parameters in the config'''
 
-	badMessage = "Bad Parameters found: "
-
 	def __init__(self):
 		self.name = "Parameters"
 
@@ -16,34 +14,27 @@ class TestParams(Test):
 		value = logdata.parameters[paramName]
 		if value != expectedValue:
 			self.result.status = TestResult.StatusType.FAIL
-			self.result.statusMessage = self.badMessage
 			self.result.extraFeedback = self.result.extraFeedback + "%s set to %s, expecting %s\n" % (paramName, `value`, `expectedValue`)
 
 	def __checkParamIsLessThan(self, paramName, maxValue, logdata):
 		value = logdata.parameters[paramName]
 		if value >= maxValue:
 			self.result.status = TestResult.StatusType.FAIL
-			self.result.statusMessage = self.badMessage
 			self.result.extraFeedback = self.result.extraFeedback + "%s set to %s, expecting less than %s\n" % (paramName, `value`, `maxValue`)
 			
 	def __checkParamIsMoreThan(self, paramName, minValue, logdata):
 		value = logdata.parameters[paramName]
 		if value <= minValue:
 			self.result.status = TestResult.StatusType.FAIL
-			self.result.statusMessage = self.badMessage
 			self.result.extraFeedback = self.result.extraFeedback + "%s set to %s, expecting less than %s\n" % (paramName, `value`, `minValue`)
 
 	def run(self, logdata):
 		self.result = TestResult()
 		self.result.status = TestResult.StatusType.PASS  # PASS by default, tests below will override it if they fail
 
-		badParams = set()
-
-		# TODO: check all params for NaN
-		# ...
+		# check all params for NaN
 		for name,value in logdata.parameters.iteritems():
 			if math.isnan(value):
-				badParams.add(name)
 				self.result.status = TestResult.StatusType.FAIL
 				self.result.extraFeedback = self.result.extraFeedback + name + " is NaN\n"
 

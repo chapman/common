@@ -15,4 +15,4 @@ class TestBalanceTwist(Test):
 		if logdata.vehicleType == "ArduPlane":
 			self.result.status = TestResult.StatusType.NA
 
-		# TODO: implement copter test for unbalanced or twisted frame
+		# TODO: implement copter test for unbalanced or twisted copter frame

@@ -13,8 +13,6 @@
 #   - MAG offsets seem to be cast to int before being output? (param is -84.67, logged as -84)
 
 
-# TODO: output log stats: size (kb/mb), length (lines), duration (using first and last GPS times)
-
 
 import DataflashLog
 
@@ -24,6 +22,8 @@ import glob
 import inspect
 import os, sys
 import argparse
+import datetime
+import time
 
 
 class TestResult:
@@ -40,6 +40,7 @@ class Test:
 	'''base class to be inherited by each specific log test. Each test should be quite granular so we have lots of small tests with clear results'''
 	name = ""
 	result = None   # will be an instance of TestResult after being run
+	execTime = None
 	def run(self, logdata):
 		pass
 
@@ -51,7 +52,7 @@ class TestSuite:
 	logdata = None
 
 	def __init__(self):
-		# load in Test subclasses from the 'tests' folder
+		# dynamically load in Test subclasses from the 'tests' folder
 		dirName = os.path.dirname(os.path.abspath(__file__))
 		testScripts = glob.glob(dirName + '/tests/*.py')
 		testClasses = []
@@ -62,20 +63,27 @@ class TestSuite:
 					testClasses.append(name)
 					self.tests.append(obj())
 
-		# and here's an example of explicitly loading a Test class
-		# m = imp.load_source('TestBadParams', dirName + '/tests/TestBadParams.py')
+		# and here's an example of explicitly loading a Test class if you wanted to do that
+		# m = imp.load_source("m", dirName + '/tests/TestBadParams.py')
 		# self.tests.append(m.TestBadParams())
 
 
 	def run(self, logdata):
+		'''run all registered tests in a single call'''
 		self.logdata = logdata
 		self.logfile = logdata.filename
-		# TODO: gather computation time when we run the tests
 		for test in self.tests:
-			test.run(self.logdata)
+			# run each test in turn, gathering timing info
+			startTime = time.time()
+			test.run(self.logdata)  # RUN THE TEST
+			endTime = time.time()
+			test.execTime = endTime-startTime
 
-	def outputPlainText(self):
-		print 'Dataflash log analysis report for file: ' + self.logfile + '\n'
+	def outputPlainText(self, outputStats):
+		print 'Dataflash log analysis report for file: ' + self.logfile
+		print 'Log size: %.2fmb (%d lines)' % (self.logdata.filesizeKB / 1024.0, self.logdata.lineCount)
+		print 'Log duration: %s' % str(datetime.timedelta(seconds=self.logdata.durationSecs)) + '\n'
+
 		if self.logdata.vehicleType == "ArduCopter" and self.logdata.getCopterType():
 			print 'Vehicle Type: %s (%s)' % (self.logdata.vehicleType, self.logdata.getCopterType())
 		else:
@@ -84,27 +92,23 @@ class TestSuite:
 		print 'Hardware: %s' % self.logdata.hardwareType
 		print 'Free RAM: %s' % self.logdata.freeRAM
 		print '\n'
-
-		#print 'Formats:\n'
-		#pprint.pprint(self.logdata.formats, width=1)
-		#print '\n'
-		#print 'Parameters:\n'
-		#pprint.pprint(self.logdata.parameters, width=1)
-		#print '\n'
 		
 		print "Test Results:"
 		for test in self.tests:
+			execTime = ""
+			if outputStats:
+				execTime = "  (%.2fms)" % (test.execTime)
 			if test.result.status == TestResult.StatusType.PASS:
-				print "  %20s:  PASS       %-50s" % (test.name, test.result.statusMessage)
+				print "  %20s:  PASS       %-50s%s" % (test.name, test.result.statusMessage,execTime)
 			elif test.result.status == TestResult.StatusType.FAIL:
-				print "  %20s:  FAIL       %-50s    [VIEW]" % (test.name, test.result.statusMessage)
+				print "  %20s:  FAIL       %-50s%s    [GRAPH]" % (test.name, test.result.statusMessage,execTime)
 			elif test.result.status == TestResult.StatusType.WARN:
-				print "  %20s:  WARN       %-50s    [VIEW]" % (test.name, test.result.statusMessage)
+				print "  %20s:  WARN       %-50s%s    [GRAPH]" % (test.name, test.result.statusMessage,execTime)
 			elif test.result.status == TestResult.StatusType.NA:
 				# skip any that aren't relevant for this vehicle/hardware/etc
 				continue
 			else:
-				print "  %20s:  UNKNOWN    %-50s" % (test.name, test.result.statusMessage)
+				print "  %20s:  UNKNOWN    %-50s%s" % (test.name, test.result.statusMessage,execTime)
 			if test.result.extraFeedback:
 				for line in test.result.extraFeedback.strip().split('\n'):
 					print "  %20s     %s" % ("",line)
@@ -132,17 +136,27 @@ def main():
 	parser = argparse.ArgumentParser(description='Analyze an APM Dataflash log for known issues')
 	parser.add_argument('logfile', type=argparse.FileType('r'), help='path to Dataflash log file')
 	parser.add_argument('-q', '--quiet', metavar='', action='store_const', const=True, help='quiet mode, do not print results')
+	parser.add_argument('-s', '--stats', metavar='', action='store_const', const=True, help='output performance stats')
+	parser.add_argument('-i', '--ignore', metavar='', action='store_const', const=True, help='ignore bad data lines')
 	parser.add_argument('-x', '--xml', type=str, metavar='XML file', nargs='?', const='', default='', help='write output to specified XML file')
 	args = parser.parse_args()
 
-	# log the log and run the tests
-	logdata = DataflashLog.DataflashLog(args.logfile.name)
+	# log the log and run the tests, and gather timings
+	startTime = time.time()	
+	logdata = DataflashLog.DataflashLog(args.logfile.name, ignoreBadlines=args.ignore)  # read log
+	endTime = time.time()
+	if args.stats:
+		print "Log file read time: %.2f seconds" % (endTime-startTime)
 	testSuite = TestSuite()
-	testSuite.run(logdata)
+	startTime = time.time()	
+	testSuite.run(logdata)  # run tests
+	endTime = time.time()
+	if args.stats:
+		print "Test suite run time: %.2f seconds" % (endTime-startTime)
 
 	# deal with output
 	if not args.quiet:
-		testSuite.outputPlainText()
+		testSuite.outputPlainText(args.stats)
 	if args.xml:
 		testSuite.outputXML(args.xml)
 		if not args.quiet:
