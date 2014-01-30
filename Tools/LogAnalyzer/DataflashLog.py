@@ -116,7 +116,7 @@ class DataflashLogHelper:
 	def isLogEmpty(logdata):
 		'''returns an human readable error string if the log is essentially empty, otherwise returns None'''
 		# naive check for now, see if the throttle output was ever above 20%
-		throttleThreshold = 2000
+		throttleThreshold = 200
 		if "CTUN" in logdata.channels:
 			maxThrottle = logdata.channels["CTUN"]["ThrOut"].max()
 			if maxThrottle < throttleThreshold:
