@@ -49,9 +49,9 @@ class TestPerformance(Test):
 			#	print "MaxT of %d detected on line %d" % (maxT,line)
 		if (maxPercentSlow > 10) or (slowLoopLineCount > 5):
 			self.result.status = TestResult.StatusType.FAIL
-			self.result.statusMessage = "%d slow loop lines found, up to %d%% (line %d)" % (slowLoopLineCount,maxPercentSlow,maxPercentSlowLine)
+			self.result.statusMessage = "%d slow loop lines found, max %d%% on line %d" % (slowLoopLineCount,maxPercentSlow,maxPercentSlowLine)
 		elif (maxPercentSlow > 5):
 			self.result.status = TestResult.StatusType.WARN
-			self.result.statusMessage = "%d slow loop lines found, up to %d%% (line %d)" % (slowLoopLineCount,maxPercentSlow,maxPercentSlowLine)
+			self.result.statusMessage = "%d slow loop lines found, max %d%% on line %d" % (slowLoopLineCount,maxPercentSlow,maxPercentSlowLine)
 		else:
 			self.result.extraFeedback = ""
