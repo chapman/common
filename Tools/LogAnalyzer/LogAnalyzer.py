@@ -12,6 +12,7 @@
 #   - MAG offsets seem to be constant (only seen data on Pixhawk)
 #   - MAG offsets seem to be cast to int before being output? (param is -84.67, logged as -84)
 
+# TODO - unify result statusMessage and extraOutput. simple tests set statusMessage, complex ones append to it with newlines
 
 
 import DataflashLog
@@ -41,6 +42,7 @@ class Test:
 	name = ""
 	result = None   # will be an instance of TestResult after being run
 	execTime = None
+	enable = True
 	def run(self, logdata):
 		pass
 
@@ -74,10 +76,11 @@ class TestSuite:
 		self.logfile = logdata.filename
 		for test in self.tests:
 			# run each test in turn, gathering timing info
-			startTime = time.time()
-			test.run(self.logdata)  # RUN THE TEST
-			endTime = time.time()
-			test.execTime = endTime-startTime
+			if test.enable:
+				startTime = time.time()
+				test.run(self.logdata)  # RUN THE TEST
+				endTime = time.time()
+				test.execTime = endTime-startTime
 
 	def outputPlainText(self, outputStats):
 		print 'Dataflash log analysis report for file: ' + self.logfile
@@ -95,6 +98,8 @@ class TestSuite:
 		
 		print "Test Results:"
 		for test in self.tests:
+			if not test.enable:
+				continue
 			execTime = ""
 			if outputStats:
 				execTime = "  (%.2fms)" % (test.execTime)
@@ -135,18 +140,28 @@ def main():
 	# deal with command line arguments
 	parser = argparse.ArgumentParser(description='Analyze an APM Dataflash log for known issues')
 	parser.add_argument('logfile', type=argparse.FileType('r'), help='path to Dataflash log file')
-	parser.add_argument('-q', '--quiet', metavar='', action='store_const', const=True, help='quiet mode, do not print results')
-	parser.add_argument('-s', '--stats', metavar='', action='store_const', const=True, help='output performance stats')
+	parser.add_argument('-q', '--quiet',  metavar='', action='store_const', const=True, help='quiet mode, do not print results')
+	parser.add_argument('-s', '--stats',  metavar='', action='store_const', const=True, help='output performance stats')
 	parser.add_argument('-i', '--ignore', metavar='', action='store_const', const=True, help='ignore bad data lines')
+	parser.add_argument('-e', '--empty',  metavar='', action='store_const', const=True, help='run an initial check for an empty log')
 	parser.add_argument('-x', '--xml', type=str, metavar='XML file', nargs='?', const='', default='', help='write output to specified XML file')
 	args = parser.parse_args()
 
-	# log the log and run the tests, and gather timings
+	# load the log
 	startTime = time.time()	
 	logdata = DataflashLog.DataflashLog(args.logfile.name, ignoreBadlines=args.ignore)  # read log
 	endTime = time.time()
 	if args.stats:
 		print "Log file read time: %.2f seconds" % (endTime-startTime)
+
+	# check for empty log if requested
+	if args.empty:
+		emptyErr = DataflashLog.DataflashLogHelper.isLogEmpty(logdata)
+		if emptyErr:
+			sys.stderr.write("Empty log file: %s, %s" % (logdata.filename, emptyErr))
+			sys.exit(1)
+
+	#run the tests, and gather timings
 	testSuite = TestSuite()
 	startTime = time.time()	
 	testSuite.run(logdata)  # run tests

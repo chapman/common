@@ -112,6 +112,17 @@ class DataflashLogHelper:
 		chunks.sort(chunkSizeCompare)
 		return chunks
 
+	@staticmethod
+	def isLogEmpty(logdata):
+		'''returns an human readable error string if the log is essentially empty, otherwise returns None'''
+		# naive check for now, see if the throttle output was ever above 20%
+		throttleThreshold = 2000
+		if "CTUN" in logdata.channels:
+			maxThrottle = logdata.channels["CTUN"]["ThrOut"].max()
+			if maxThrottle < throttleThreshold:
+				return "Throttle never above 20%"
+		return None
+
 
 class DataflashLog:
 	'''APM Dataflash log file reader and container class. Keep this simple, add more advanced or specific functions to DataflashLogHelper class'''

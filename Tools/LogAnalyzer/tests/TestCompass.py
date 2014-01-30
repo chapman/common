@@ -12,9 +12,10 @@ class TestCompass(Test):
 		self.result = TestResult()
 		self.result.status = TestResult.StatusType.PASS
 
-		# TODO: should max compass offsets be 150 or 250 on Pixhawk?
 		# quick test that compass offset parameters are within recommended range (+/- 150)
-		maxOffset   = 150
+		maxOffset = 150
+		if logdata.hardwareType == "PX4":
+			maxOffset = 250 # Pixhawks have their offsets scaled larger
 		compassOfsX = logdata.parameters["COMPASS_OFS_X"]
 		compassOfsY = logdata.parameters["COMPASS_OFS_Y"]
 		compassOfsZ = logdata.parameters["COMPASS_OFS_Z"]
@@ -23,33 +24,31 @@ class TestCompass(Test):
 			self.result.status = TestResult.StatusType.FAIL
 			self.result.statusMessage = "Large compass off params (X:%.2f, Y:%.2f, Z:%.2f)" % (compassOfsX,compassOfsY,compassOfsZ)
 
-		# check for excessive compass offsets using MAG data if present
-		# TODO: MAG log values seem to be constant, do we need to check them?
+		# check for excessive compass offsets using MAG data if present (it can change during flight is compass learn is on)
 		if "MAG" in logdata.channels:
-			errMsg = "Large MAG offset data - "
 			err = False
 			#print "MAG min/max xyz... %.2f %.2f %.2f %.2f %.2f %.2f " % (logdata.channels["MAG"]["OfsX"].min(), logdata.channels["MAG"]["OfsX"].max(), logdata.channels["MAG"]["OfsY"].min(), logdata.channels["MAG"]["OfsY"].min(), logdata.channels["MAG"]["OfsZ"].min(), logdata.channels["MAG"]["OfsZ"].max())
 			if logdata.channels["MAG"]["OfsX"].max() >  maxOffset:
-				errMsg = errMsg + "X: %.2f" % logdata.channels["MAG"]["OfsX"].max()
+				self.result.extraFeedback = self.result.extraFeedback + "X: %.2f\n" % logdata.channels["MAG"]["OfsX"].max()
 				err = True
 			if logdata.channels["MAG"]["OfsX"].min() < -maxOffset:
-				errMsg = errMsg + "X: %.2f" % logdata.channels["MAG"]["OfsX"].min()
+				self.result.extraFeedback = self.result.extraFeedback + "X: %.2f\n" % logdata.channels["MAG"]["OfsX"].min()
 				err = True
 			if logdata.channels["MAG"]["OfsY"].max() >  maxOffset:
-				errMsg = errMsg + "Y: %.2f" % logdata.channels["MAG"]["OfsY"].max()
+				self.result.extraFeedback = self.result.extraFeedback + "Y: %.2f\n" % logdata.channels["MAG"]["OfsY"].max()
 				err = True
 			if logdata.channels["MAG"]["OfsY"].min() < -maxOffset:
-				errMsg = errMsg + "Y: %.2f" % logdata.channels["MAG"]["OfsY"].min()
+				self.result.extraFeedback = self.result.extraFeedback + "Y: %.2f\n" % logdata.channels["MAG"]["OfsY"].min()
 				err = True
 			if logdata.channels["MAG"]["OfsZ"].max() >  maxOffset:
-				errMsg = errMsg + "Z: %.2f" % logdata.channels["MAG"]["OfsZ"].max()
+				self.result.extraFeedback = self.result.extraFeedback + "Z: %.2f\n" % logdata.channels["MAG"]["OfsZ"].max()
 				err = True
 			if logdata.channels["MAG"]["OfsZ"].min() < -maxOffset:
-				errMsg = errMsg + "Z: %.2f" % logdata.channels["MAG"]["OfsZ"].min()
+				self.result.extraFeedback = self.result.extraFeedback + "Z: %.2f\n" % logdata.channels["MAG"]["OfsZ"].min()
 				err = True
 			if err:
 				self.result.status = TestResult.StatusType.FAIL
-				self.result.statusMessage = errMsg
+				self.result.statusMessage = "Large compass offset in MAG data"
 
 		# TODO: check for compass/throttle interference. Need to add mag_field to logging, or calc our own from MAG data if present
 		# TODO: can we derive a compassmot percentage from the params? Fail if >30%?				

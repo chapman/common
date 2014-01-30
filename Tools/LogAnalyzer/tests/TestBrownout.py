@@ -25,9 +25,10 @@ class TestBrownout(Test):
 				isArmed = False
 
 		# check for relative altitude at end
-		finalAlt = logdata.channels["GPS"]["RelAlt"].getNearestValue(logdata.lineCount, lookForwards=False)
+		if "CTUN" in logdata.channels and "BarAlt" in logdata.channels["CTUN"]:
+			finalAlt = logdata.channels["CTUN"]["BarAlt"].getNearestValue(logdata.lineCount, lookForwards=False)
 
-		finalAltMax = 3.0   # max alt offset that we'll still consider to be on the ground
-		if isArmed and finalAlt > finalAltMax:
-			self.result.status = TestResult.StatusType.FAIL
-			self.result.statusMessage = "Truncated Log? Ends while armed at altitude %.2fm" % finalAlt
+			finalAltMax = 3.0   # max alt offset that we'll still consider to be on the ground
+			if isArmed and finalAlt > finalAltMax:
+				self.result.status = TestResult.StatusType.FAIL
+				self.result.statusMessage = "Truncated Log? Ends while armed at altitude %.2fm" % finalAlt

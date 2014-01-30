@@ -12,5 +12,8 @@ class TestEmpty(Test):
 		self.result = TestResult()
 		self.result.status = TestResult.StatusType.PASS
 
-		# TODO: implement test for empty or near-empty logs (i.e. vehicle hasn't flown greater than X distance or Y height, or for Z duration with throttle above some threshold)
-		
+		# all the logic for this test is in the helper function, as it can also be called up front as an early exit
+		emptyErr = DataflashLog.DataflashLogHelper.isLogEmpty(logdata)
+		if emptyErr:
+			self.result.status = TestResult.StatusType.FAIL
+			self.result.statusMessage = "Empty log? " + emptyErr
