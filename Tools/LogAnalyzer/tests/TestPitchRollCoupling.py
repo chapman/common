@@ -36,7 +36,7 @@ class TestPitchRollCoupling(Test):
 		isAuto = False # always start in a manual control mode
 		prevLine = 1
 		for line,modepair in orderedModes.iteritems():
-			mode = modepair[0]
+			mode = modepair[0].upper()
 			if mode in autoModes:
 				print "On line %d mode changed to %s (AUTO)" % (line,mode)
 				if not isAuto:
