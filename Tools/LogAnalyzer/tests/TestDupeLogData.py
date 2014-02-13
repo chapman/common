@@ -26,7 +26,7 @@ class TestDupeLogData(Test):
 			if i == sampleStartIndex:
 				continue # skip matching against ourselves
 			j = 0
-			while j<20 and data[i+j][1] == sample[j][1]:
+			while j<20 and (i+j)<len(data) and data[i+j][1] == sample[j][1]:
 				#print "### Match found, j=%d, data=%f, sample=%f, log data matched to sample at line %d" % (j,data[i+j][1],sample[j][1],data[i+j][0])
 				j += 1
 			if j == 20: # all samples match
@@ -63,7 +63,7 @@ class TestDupeLogData(Test):
 				if matchedLine:
 					#print "Data from line %d found duplicated at line %d" % (sample[0][0],matchedLine)
 					self.result.status = TestResult.StatusType.FAIL
-					self.result.statusMessage = "Duplicate data chunks found in log"
+					self.result.statusMessage = "Duplicate data chunks found in log (%d and %d)" % (sample[0][0],matchedLine)
 					return
 				sampleIndex += 1
 				if sampleIndex >= len(sampleStartIndices):
