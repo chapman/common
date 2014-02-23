@@ -42,10 +42,10 @@ try:
 	assert(logdata.durationSecs    == 155)
 	assert(logdata.lineCount       == 4750)
 
-	# TODO: test DataflashLog reading 2
+	# TODO: unit test DataflashLog reading 2
 	# ...
 
-	# TODO: test the log test classes
+	# TODO: unit test the log test classes
 	# ...
 
 
