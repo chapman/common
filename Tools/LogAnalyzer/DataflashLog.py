@@ -224,8 +224,8 @@ class DataflashLog:
 	def read(self, logfile, ignoreBadlines=False):
 		'''returns True on successful log read (including bad lines if ignoreBadlines==True), False otherwise'''
 		# TODO: dataflash log parsing code is *SUPER* hacky, should re-write more methodically
-		# TODO: identify and bail on pre-3.0 logs, I think they're not worth supporting at this point
-
+		# TODO: fix error handling of logfile reading, return code vs exception, error message reporting
+		# TODO: report number of lines skipped during read
 		self.filename = logfile
 		f = open(self.filename, 'r')
 		lineNumber = 0
@@ -318,6 +318,7 @@ class DataflashLog:
 		# gather some general stats about the log
 		self.lineCount  = lineNumber
 		self.filesizeKB = os.path.getsize(self.filename) / 1024.0
+		# TODO: switch duration calculation to use TimeMS values rather than GPS timestemp
 		if "GPS" in self.channels:
 			# the GPS time label changed at some point, need to handle both
 			timeLabel = "TimeMS"
