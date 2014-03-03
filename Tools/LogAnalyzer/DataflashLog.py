@@ -280,6 +280,9 @@ class DataflashLog:
 		# TODO: dataflash log parsing code is *SUPER* hacky, should re-write more methodically
 		self.filename = logfile
 		f = open(self.filename, 'r')
+		if f.read(4) == '\xa3\x95\x80\x80':
+			raise Exception("Unable to parse binary log files at this time, will be added soon")
+		f.seek(0)
 		lineNumber = 0
 		knownHardwareTypes = ["APM", "PX4", "MPNG"]
 		for line in f:
